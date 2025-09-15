@@ -1,4 +1,5 @@
 import NowShowing from '@/components/now-showing'
+import { useTheme } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { createFileRoute } from '@tanstack/react-router'
@@ -9,7 +10,13 @@ export const Route = createFileRoute('/')({
 })
 
 function RouteComponent() {
+    const { theme, setTheme } = useTheme()
     const [isDarkMode, setIsDarkMode] = useState(false)
+    
+    const handleThemeChange = (checked: boolean) => {
+        setTheme(checked ? 'dark' : 'light')
+        setIsDarkMode(checked)
+    }
 
     return (
         <div className='md:max-w-5xl md:mx-auto'>
@@ -41,7 +48,7 @@ function RouteComponent() {
                     <Switch
                         id='dark-mode-toggle'
                         checked={isDarkMode}
-                        onCheckedChange={setIsDarkMode}
+                        onCheckedChange={handleThemeChange}
                         className='data-[state=unchecked]:bg-[#AAA9B1]'
                         aria-label={`toggle dark mode`}
                         role='switch'

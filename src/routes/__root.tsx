@@ -6,6 +6,7 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import styles from '@/index.css?url'
+import { ThemeProvider } from '@/components/theme-provider'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -43,7 +44,9 @@ function RootDocument({
         <HeadContent />
       </head>
       <body>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
