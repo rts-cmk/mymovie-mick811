@@ -5,8 +5,18 @@ import {
   HeadContent,
   Scripts,
 } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import styles from '@/index.css?url'
 import { ThemeProvider } from '@/components/theme-provider'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 3,
+    },
+  },
+})
 
 export const Route = createRootRoute({
   head: () => ({
@@ -44,9 +54,11 @@ function RootDocument({
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>
