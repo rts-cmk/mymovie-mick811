@@ -1,0 +1,31 @@
+{
+  "name": "mymovie-mick811",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.2",
+    "vite-tsconfig-paths": "^5.1.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.2.2",
+    "@tailwindcss/vite": "^4.1.13",
+    "@tanstack/react-router": "^1.131.41",
+    "@tanstack/react-start": "^1.131.43",
+    "hono": "^4.9.7",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwindcss": "^4.1.13",
+    "vite": "^7.1.5",
+    "zod": "^3.22.4"
+  }
+}
