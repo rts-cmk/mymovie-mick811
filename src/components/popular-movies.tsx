@@ -1,14 +1,9 @@
-import { getPopular, getDetails } from "@/lib/api";
+import { getDetails, getPopular } from "@/lib/api";
+import { formatRuntime } from "@/lib/utils";
 import { Movie } from "@/types/api";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { StarIcon, Clock } from "lucide-react";
-
-const formatRuntime = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60 // modulo operator; gives the remainder of the division
-    return `${hours}h ${mins}m`;
-};
 
 export function PopularCard({
     movie,
@@ -17,7 +12,7 @@ export function PopularCard({
 }) {
     const { data: movieDetails } = useQuery({
         queryKey: ['movieDetails', movie.id],
-        queryFn: () => getDetails(movie.id),
+        queryFn: () => getDetails(movie.id.toString()),
         enabled: !!movie.id,
     });
 
@@ -37,7 +32,7 @@ export function PopularCard({
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                        <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-balance">
                             {movie.title}
                         </h3>
 

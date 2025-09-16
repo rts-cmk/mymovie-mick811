@@ -1,4 +1,4 @@
-import type { Movie, MoviesResponse, DetailsResponse } from '@/types/api'
+import type { Movie, MoviesResponse, DetailsResponse, Credits } from '@/types/api'
 
 const BASE_URL = 'https://api.themoviedb.org/3'
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY
@@ -29,7 +29,7 @@ export function getPopular(): Promise<MoviesResponse> {
     })
 }
 
-export function getMovie(id: number): Promise<Movie> {
+export function getMovie(id: string): Promise<Movie> {
     return fetch(`${BASE_URL}/movie/${id}`, {
         headers: {
             'Authorization': `Bearer ${API_KEY}`
@@ -42,8 +42,8 @@ export function getMovie(id: number): Promise<Movie> {
     })
 }
 
-export function getDetails(id: number): Promise<DetailsResponse> {
-    return fetch(`${BASE_URL}/movie/${id}`, {
+export function getDetails(id: string): Promise<DetailsResponse & Credits> {
+    return fetch(`${BASE_URL}/movie/${id}?append_to_response=credits,images`, {
         headers: {
             'Authorization': `Bearer ${API_KEY}`
         }

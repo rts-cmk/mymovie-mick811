@@ -11,7 +11,7 @@ export function MovieCard({
     movie: Movie,
 }) {
     return (
-        <Link to="/movie/$" params={{ _splat: encodeURIComponent(movie.title) }}>
+        <Link to="/movie/$" params={{ _splat: encodeURIComponent(movie.id) }}>
             <figure className="shrink-0 md:shrink">
                 <div className="overflow-hidden rounded-md">
                     <img
