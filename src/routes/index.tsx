@@ -1,4 +1,5 @@
 import NowShowing from '@/components/now-showing'
+import PopularMovies from '@/components/popular-movies'
 import { useTheme } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -114,7 +115,7 @@ function RouteComponent() {
                     </header>
 
                     {/* ill come to this later */}
-                    {/* <PopularMovies /> */}
+                    <PopularMovies />
                 </section>
             </main>
         </div>
