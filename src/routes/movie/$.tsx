@@ -77,14 +77,28 @@ function RouteComponent() {
             />
           </section>
         </div>
-        <figure>
-          <div>
-            <img
-              src={`https://image.tmdb.org/t/p/original/${data.backdrop_path}`}
-              alt={data.title}
-              className="w-full object-cover"
-            />
-          </div>
+          <figure>
+            <div>
+              {(() => {
+                const officialTrailer = data.videos?.results.find(
+                  video => video.type === 'Trailer' && video.official && video.site === 'YouTube'
+                );
+                return officialTrailer?.key ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${officialTrailer.key}`}
+                    title={data.title}
+                    className="w-full aspect-video"
+                    allowFullScreen
+                  />
+                ) : (
+                  <img
+                    src={`https://image.tmdb.org/t/p/original/${data.backdrop_path}`}
+                    alt={data.title}
+                    className="w-full aspect-video object-cover"
+                  />
+                );
+              })()}
+            </div>
           <figcaption className="px-4 mt-4 md:max-w-4xl md:mx-auto">
             <h1 className="text-2xl font-bold text-balance md:text-4xl">{data.title}</h1>
             <div className="flex items-center gap-1 text-base text-muted-foreground mt-2 md:text-lg">

@@ -43,7 +43,7 @@ export function getMovie(id: string): Promise<Movie> {
 }
 
 export function getDetails(id: string): Promise<DetailsResponse & Credits> {
-    return fetch(`${BASE_URL}/movie/${id}?append_to_response=credits,images`, {
+    return fetch(`${BASE_URL}/movie/${id}?append_to_response=credits,images,videos`, {
         headers: {
             'Authorization': `Bearer ${API_KEY}`
         }
