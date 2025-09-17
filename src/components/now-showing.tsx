@@ -23,7 +23,7 @@ export function MovieCard({
                     />
                 </div>
                 <figcaption className="pt-2 text-left">
-                    <div className="font-medium truncate max-w-[200px]" title={movie.title}>
+                    <div className="font-medium max-w-[200px]" title={movie.title}>
                         {movie.title}
                     </div>
                     <span className="text-muted-foreground text-xs flex items-center gap-1">
