@@ -4,7 +4,7 @@ import { useTheme } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export const Route = createFileRoute('/')({
     component: RouteComponent,
@@ -12,7 +12,12 @@ export const Route = createFileRoute('/')({
 
 function RouteComponent() {
     const { theme, setTheme } = useTheme()
-    const [isDarkMode, setIsDarkMode] = useState(false)
+    const [isDarkMode, setIsDarkMode] = useState(theme === 'dark')
+
+    // Sync local state with theme provider
+    useEffect(() => {
+        setIsDarkMode(theme === 'dark')
+    }, [theme])
 
     const handleThemeChange = (checked: boolean) => {
         setTheme(checked ? 'dark' : 'light')

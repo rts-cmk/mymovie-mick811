@@ -3,9 +3,9 @@ import { formatRuntime } from '@/lib/utils'
 import { useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowLeftIcon, StarIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/movie/$')({
@@ -16,6 +16,11 @@ function RouteComponent() {
   const { _splat } = Route.useParams()
   const { theme, setTheme } = useTheme()
   const [isDarkMode, setIsDarkMode] = useState(theme === 'dark')
+
+  // Sync local state with theme provider
+  useEffect(() => {
+    setIsDarkMode(theme === 'dark')
+  }, [theme])
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['movie', _splat],
@@ -139,15 +144,17 @@ function RouteComponent() {
             >
               Cast
             </h2>
-            <Button
-              type='button'
-              variant='outline'
-              aria-label='view all cast'
-              tabIndex={0}
-              className='rounded-full py-0 px-3 text-xs text-[#AAA9B1] border-[#AAA9B1] h-8'
-            >
-              See more
-            </Button>
+            <Link to='/movie/cast/$' params={{ _splat: data.id.toString() }}>
+                <Button
+                    type='button'
+                    variant='outline'
+                    aria-label='view all cast'
+                    tabIndex={0}
+                    className='rounded-full py-0 px-3 text-xs text-[#AAA9B1] border-[#AAA9B1] h-8'
+                >
+                    See more
+                </Button>
+            </Link>
           </header>
           <div className="flex flex-wrap gap-4 md:gap-6">
             {data.credits?.cast?.slice(0, 4).map((cast) => (
