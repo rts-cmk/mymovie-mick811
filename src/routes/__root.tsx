@@ -1,24 +1,20 @@
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
+import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { ReactNode } from 'react'
 import {
   Outlet,
-  createRootRoute,
   HeadContent,
   Scripts,
+  createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import styles from '@/index.css?url'
 import { ThemeProvider } from '@/components/theme-provider'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 3,
-    },
-  },
-})
-
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+}>()({
   head: () => ({
     meta: [
       {
@@ -45,9 +41,11 @@ function RootComponent() {
   )
 }
 
-function RootDocument({ 
-    children 
+function RootDocument({
+  children
 }: { children: ReactNode }) {
+  const { queryClient } = Route.useRouteContext()
+
   return (
     <html>
       <head>
@@ -60,6 +58,18 @@ function RootDocument({
           </ThemeProvider>
         </QueryClientProvider>
         <Scripts />
+        <TanStackDevtools
+          plugins={[
+            {
+              name: "TanStack Query",
+              render: <ReactQueryDevtoolsPanel />,
+            },
+            {
+              name: "TanStack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
+        />
       </body>
     </html>
   )

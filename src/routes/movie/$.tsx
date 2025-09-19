@@ -1,12 +1,10 @@
-import { getDetails } from '@/lib/api'
-import { formatRuntime } from '@/lib/utils'
-import { useTheme } from '@/components/theme-provider'
-import { Switch } from '@/components/ui/switch'
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowLeftIcon, StarIcon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { getMovieDetails } from '@/lib/fn'
+import { formatRuntime } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Video } from '@/lib/api'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export const Route = createFileRoute('/movie/$')({
   component: RouteComponent,
@@ -14,172 +12,200 @@ export const Route = createFileRoute('/movie/$')({
 
 function RouteComponent() {
   const { _splat } = Route.useParams()
-  const { theme, setTheme } = useTheme()
-  const [isDarkMode, setIsDarkMode] = useState(theme === 'dark')
 
-  // Sync local state with theme provider
-  useEffect(() => {
-    setIsDarkMode(theme === 'dark')
-  }, [theme])
-
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['movie', _splat],
-    queryFn: () => getDetails(_splat || ''),
-  });
-
-  const handleThemeChange = (checked: boolean) => {
-    setTheme(checked ? 'dark' : 'light')
-    setIsDarkMode(checked)
+  if (!_splat) {
+    return <div>Movie ID not found</div>
   }
 
-  if (isLoading) {
-    return (
-      <main className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-lg text-muted-foreground animate-pulse">Loading movie...</p>
-      </main>
-    );
-  }
+  const { data: movieDetails, isLoading, error } = useQuery({
+    queryKey: ['movieDetails', _splat],
+    queryFn: () => getMovieDetails({ data: { movieId: _splat } }),
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+  })
 
-  if (isError || !data) {
-    console.error('Error loading movie:', error);
-    return (
-      <main className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-lg text-red-500">Movie not found</p>
-      </main>
-    );
-  }
+  if (error) throw new Error(error.message)
+  if (isLoading || !movieDetails) return <div>Loading movie details...</div>
 
   return (
-    <main className="flex flex-col gap-8">
-      <header>
-        <div className="flex justify-between items-center py-4 md:max-w-4xl md:mx-auto">
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => window.history.back()}
-            aria-label="Go back"
-          >
-            <ArrowLeftIcon className="w-5 h-5" />
-            Back
+    <div className='md:max-w-5xl md:mx-auto md:px-4 md:py-8'>
+      {/* Header with theme toggle - Desktop */}
+      <header className='hidden md:flex justify-between items-center mb-6'>
+        <Link to="/">
+          <Button variant="ghost" className='flex items-center gap-2'>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left">
+              <path d="m12 19-7-7 7-7" />
+              <path d="M19 12H5" />
+            </svg>
+            Back to Movies
           </Button>
-          <section className='flex items-center' aria-label='Theme controls'>
-            <label htmlFor='dark-mode-toggle-movie' className='sr-only'>
-              toggle dark mode
-            </label>
-            <Switch
-              id='dark-mode-toggle-movie'
-              checked={isDarkMode}
-              onCheckedChange={handleThemeChange}
-              className='data-[state=unchecked]:bg-[#AAA9B1]'
-              aria-label={`toggle dark mode`}
-              role='switch'
-              aria-checked={isDarkMode}
-            />
-          </section>
-        </div>
-          <figure>
-            <div>
-              {(() => {
-                const officialTrailer = data.videos?.results.find(
-                  video => video.type === 'Trailer' && video.official && video.site === 'YouTube'
-                );
-                return officialTrailer?.key ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${officialTrailer.key}`}
-                    title={data.title}
-                    className="w-full aspect-video"
-                    allowFullScreen
-                  />
-                ) : (
-                  <img
-                    src={`https://image.tmdb.org/t/p/original/${data.backdrop_path}`}
-                    alt={data.title}
-                    className="w-full aspect-video object-cover"
-                  />
-                );
-              })()}
-            </div>
-          <figcaption className="px-4 mt-4 md:max-w-4xl md:mx-auto">
-            <h1 className="text-2xl font-bold text-balance md:text-4xl">{data.title}</h1>
-            <div className="flex items-center gap-1 text-base text-muted-foreground mt-2 md:text-lg">
-              <StarIcon className="w-4 h-4 fill-yellow-400 text-yellow-400 md:w-5 md:h-5" />
-              {data.vote_average.toFixed(1)}/10 IMDb
-            </div>
-          </figcaption>
-        </figure>
+        </Link>
+        <ThemeToggle />
       </header>
 
-      <div className="px-4 flex flex-col gap-6 md:max-w-4xl md:mx-auto md:gap-8">
-        <section aria-label="Genres">
-          <h2 className="text-[#110E47] dark:text-[#DBE3FF] text-base font-black tracking-[0.02em] mb-3 md:text-lg">Genres</h2>
-          <ul className="flex flex-wrap gap-2 justify-start">
-            {data.genres && data.genres.length > 0 ? (
-              data.genres.map((genre) => (
-                <li
-                  key={genre.id}
-                  className="px-3 py-1 bg-[#DBE3FF] text-[#88A4E8] text-xs font-medium rounded-full uppercase md:px-4 md:py-2 md:text-sm"
-                >
-                  {genre.name}
-                </li>
-              ))
-            ) : (
-              <li className="text-sm text-muted-foreground">No genres available</li>
-            )}
-          </ul>
-        </section>
-
-        <section className='grid grid-cols-3 gap-4 md:grid-cols-6 md:gap-8' aria-label="Movie details">
-          <div className='flex flex-col gap-1 md:col-span-2'>
-            <dt className="text-sm font-medium text-muted-foreground md:text-base">Length</dt>
-            <dd className="text-base md:text-lg">{formatRuntime(data.runtime)}</dd>
-          </div>
-          <div className='flex flex-col gap-1 md:col-span-2'>
-            <dt className="text-sm font-medium text-muted-foreground md:text-base">Language</dt>
-            <dd className="text-base md:text-lg">{data.spoken_languages[0]?.english_name}</dd>
-          </div>
-          <div className='flex flex-col gap-1 md:col-span-2'>
-            <dt className="text-sm font-medium text-muted-foreground md:text-base">Rating</dt>
-            <dd className="text-base md:text-lg">{data.vote_average.toFixed(1)}/10 IMDb</dd>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-[#110E47] dark:text-[#DBE3FF] text-base font-black tracking-[0.02em] mb-3 md:text-lg">Description</h2>
-          <p className="text-muted-foreground leading-relaxed md:text-lg md:leading-relaxed">{data.overview}</p>
-        </section>
-
-        <section>
-          <header className='flex justify-between items-center'>
-            <h2
-              className='text-[#110E47] dark:text-[#DBE3FF] text-base font-black tracking-[0.02em] mb-3 md:text-lg'
-              role='heading'
-              aria-level={2}
-              id='cast-heading'
-            >
-              Cast
-            </h2>
-            <Link to='/movie/cast/$' params={{ _splat: data.id.toString() }}>
-                <Button
-                    type='button'
-                    variant='outline'
-                    aria-label='view all cast'
-                    tabIndex={0}
-                    className='rounded-full py-0 px-3 text-xs text-[#AAA9B1] border-[#AAA9B1] h-8'
-                >
-                    See more
-                </Button>
+      <div className='grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8'>
+        <div className='relative'>
+          {/* Mobile navigation */}
+          <div className='absolute top-4 left-4 z-10 md:hidden'>
+            <Link to="/">
+              <Button variant="ghost" size="icon" className="text- rounded-full p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left">
+                  <path d="m12 19-7-7 7-7" />
+                  <path d="M19 12H5" />
+                </svg>
+              </Button>
             </Link>
-          </header>
-          <div className="flex flex-wrap gap-4 md:gap-6">
-            {data.credits?.cast?.slice(0, 4).map((cast) => (
-              <figure key={cast.id} className="flex flex-col gap-2">
-                <img src={`https://image.tmdb.org/t/p/w500${cast.profile_path}`} width={64} height={64} alt={cast.name} className='rounded-md object-cover md:w-20 md:h-20' />
-                <figcaption className='text-sm text-balance text-muted-foreground max-w-[64px] md:max-w-[80px] md:text-base'>{cast.name}</figcaption>
-              </figure>
-            ))}
           </div>
-        </section>
+          <div className='absolute top-4 right-4 z-10 md:hidden'>
+            <div className='rounded-full p-2'>
+              <ThemeToggle />
+            </div>
+          </div>
+
+          <img
+            src={`https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`}
+            alt={movieDetails.title}
+            className='w-full'
+          />
+          <div className='absolute inset-0 flex flex-col items-center justify-center md:hidden'>
+            <Button
+              onClick={() => {
+                const trailer = movieDetails.videos?.results?.find(
+                  (video) => video.type === 'Trailer' && video.site === 'YouTube'
+                )
+                if (trailer) {
+                  window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank')
+                }
+              }}
+              className='bg-white size-16 rounded-full flex items-center justify-center'
+              aria-label='Play trailer'
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="text-black size-8"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </Button>
+            <span className='text-white text-base font-medium mt-2'>Play Trailer</span>
+          </div>
+        </div>
+
+        <div className='space-y-6 px-4'>
+          <div>
+            <h1 className='text-3xl md:text-4xl font-bold text-black dark:text-white mb-2'>
+              {movieDetails.title}
+            </h1>
+            {movieDetails.tagline && (
+              <p className='text-lg text-muted-foreground italic'>
+                "{movieDetails.tagline}"
+              </p>
+            )}
+          </div>
+
+          {/* average rating info */}
+          <div className='flex flex-wrap gap-4 items-center'>
+            <div className='flex gap-x-1 items-center'>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star-icon lucide-star">
+                <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" className='fill-yellow-500 text-yellow-500' />
+              </svg>
+              <span className='font-medium text-muted-foreground'>{movieDetails.vote_average.toFixed(1)}/10 IMDb</span>
+            </div>
+          </div>
+
+          {/* genres info */}
+          {movieDetails.genres && movieDetails.genres.length > 0 && (
+            <div className='flex flex-wrap gap-2'>
+              {movieDetails.genres.map((genre) => (
+                <span key={genre.id} className='text-sm font-medium bg-primary text-[#88A4E8] px-3 py-1 rounded-full uppercase'>
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* movie info */}
+          <div className='grid grid-cols-3 gap-4 '>
+            <div className='flex flex-col gap-x-1'>
+              <span className='text-sm text-muted-foreground'>Length:</span>
+              <span>{formatRuntime(movieDetails.runtime)}</span>
+            </div>
+            <div className='flex flex-col gap-x-1'>
+              <span className='text-sm text-muted-foreground'>Language:</span>
+              <span>{movieDetails.spoken_languages[0]?.english_name}</span>
+            </div>
+            <div className='flex flex-col gap-x-1'>
+              <span className='text-sm text-muted-foreground'>Rating:</span>
+              <span>{movieDetails.adult ? 'R' : 'PG'}</span>
+            </div>
+          </div>
+
+          {/* description hvis det er tilgængeligt */}
+          <div>
+            <h2 className='text-xl font-semibold mb-3 text-black dark:text-primary'>Description</h2>
+            <p className='text-muted-foreground leading-relaxed'>
+              {movieDetails.overview}
+            </p>
+          </div>
+
+          {/* cast hvis det er tilgængeligt */}
+          {movieDetails.credits?.cast && movieDetails.credits.cast.length > 0 && (
+            <div>
+              <div className='flex justify-between items-center mb-3'>
+                <h2 className='text-xl font-semibold text-black dark:text-primary'>Cast</h2>
+                <Link to='/movie/cast/$' params={{ _splat: movieDetails.id.toString() }}>
+                  <Button variant='ghost' className='text-sm rounded-full border shadow-xs hover:bg-accent text-black dark:text-white dark:bg-input/30 dark:border-input dark:hover:bg-input/50'>
+                    See more
+                  </Button>
+                </Link>
+              </div>
+              <div className='grid grid-cols-4 gap-4'>
+                {movieDetails.credits.cast.slice(0, 4).map((actor) => (
+                  <div key={actor.id} className='text-center'>
+                    {actor.profile_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                        alt={actor.name}
+                        className='w-full aspect-[2/3] object-cover rounded-lg mb-2'
+                      />
+                    ) : (
+                      <div className='w-full aspect-[2/3] bg-background dark:bg-muted rounded-lg mb-2 flex items-center justify-center'>
+                        <span className='text-muted-foreground dark:text-muted-foreground'>No Image</span>
+                      </div>
+                    )}
+                    <p className='text-xs text-black dark:text-primary'>{actor.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </main>
+
+      {/* trailer section for desktop */}
+      <div className='hidden md:block mt-8 md:max-w-5xl md:mx-auto px-4'>
+        <h2 className='text-xl font-semibold mb-6 text-black dark:text-primary'>Trailers</h2>
+        <div className='grid grid-cols-2 gap-6'>
+          {movieDetails.videos?.results.filter((video: Video) => video.type === 'Trailer').slice(0, 2).map((video: Video) => (
+            <div key={video.id} className='bg-background dark:bg-muted/30 rounded-xl p-4 shadow-sm border dark:border-input/50'>
+              <div className='aspect-video w-full rounded-lg overflow-hidden mb-3'>
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.key}`}
+                  title={`${movieDetails.title} ${video.type} Trailer`}
+                  className='w-full h-full'
+                  allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                  allowFullScreen
+                />
+              </div>
+              <h3 className='font-medium text-black dark:text-primary mb-1'>{video.name}</h3>
+              <p className='text-sm text-muted-foreground'>{video.type}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div >
   )
 }

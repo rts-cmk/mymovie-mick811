@@ -1,56 +1,129 @@
-import type { Movie, MoviesResponse, DetailsResponse, Credits } from '@/types/api'
-
-const BASE_URL = 'https://api.themoviedb.org/3'
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY
-
-export function getPlaying(): Promise<MoviesResponse> {
-    return fetch(`${BASE_URL}/movie/now_playing`, {
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`
-        }
-    })
-    .then(response => response.json())
-    .catch(error => {
-        console.error('error fetching playing movies', error)
-        throw error
-    })
+export type Movie = {
+    adult: boolean
+    backdrop_path: string
+    genre_ids: number[]
+    id: number
+    original_language: string
+    original_title: string
+    overview: string
+    popularity: number
+    poster_path: string
+    release_date: string
+    title: string
+    video: boolean
+    vote_average: number
+    vote_count: number
 }
 
-export function getPopular(): Promise<MoviesResponse> {
-    return fetch(`${BASE_URL}/movie/popular`, {
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`
-        }
-    })
-    .then(response => response.json())
-    .catch(error => {
-        console.error('error fetching popular movies', error)
-        throw error
-    })
+export type MoviesResponse = {
+    page: number
+    results: Movie[]
+    total_pages: number
+    total_results: number
 }
 
-export function getMovie(id: string): Promise<Movie> {
-    return fetch(`${BASE_URL}/movie/${id}`, {
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`
-        }
-    })
-    .then(response => response.json())
-    .catch(error => {
-        console.error('error fetching movie', error)
-        throw error
-    })
+export type Genre = {
+    id: number
+    name: string
 }
 
-export function getDetails(id: string): Promise<DetailsResponse & Credits> {
-    return fetch(`${BASE_URL}/movie/${id}?append_to_response=credits,images,videos`, {
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`
-        }
-    })
-    .then(response => response.json())
-    .catch(error => {
-        console.error('error fetching details', error)
-        throw error
-    })
+export type ProductionCompany = {
+    id: number
+    logo_path: string
+    name: string
+    origin_country: string
+}
+
+export type ProductionCountry = {
+    iso_3166_1: string
+    name: string
+}
+
+export type SpokenLanguage = {
+    english_name: string
+    iso_639_1: string
+    name: string
+}
+
+export type DetailsResponse = {
+    adult: boolean
+    backdrop_path: string
+    belongs_to_collection: string
+    budget: number
+    genres: Genre[]
+    homepage: string
+    id: number
+    imdb_id: string
+    original_language: string
+    original_title: string
+    overview: string
+    popularity: number
+    poster_path: string
+    production_companies: ProductionCompany[]
+    production_countries: ProductionCountry[]
+    release_date: string
+    revenue: number
+    runtime: number
+    spoken_languages: SpokenLanguage[]
+    status: string
+    tagline: string
+    title: string
+    video: boolean
+    vote_average: number
+    vote_count: number
+    credits?: Credits
+    videos?: Videos
+}
+
+export type Videos = {
+    id: number,
+    results: Video[]
+}
+
+export type Video = {
+    iso_639_1: string,
+    iso_3166_1: string,
+    name: string,
+    key: string,
+    site: string,
+    size: number,
+    type: string,
+    official: boolean,
+    published_at: string,
+    id: string,
+}
+
+export type Credits = {
+    id: number
+    cast: Cast[]
+    crew: Cast[]
+}
+
+export interface Cast {
+    adult:                boolean;
+    gender:               number;
+    id:                   number;
+    known_for_department: Department;
+    name:                 string;
+    original_name:        string;
+    popularity:           number;
+    profile_path:         null | string;
+    cast_id?:             number;
+    character?:           string;
+    credit_id:            string;
+    order?:               number;
+    department?:          Department;
+    job?:                 string;
+}
+
+export enum Department {
+    Acting = "Acting",
+    Art = "Art",
+    Camera = "Camera",
+    Directing = "Directing",
+    Editing = "Editing",
+    Production = "Production",
+    Sound = "Sound",
+    VisualEffects = "Visual Effects",
+    Writing = "Writing",
 }

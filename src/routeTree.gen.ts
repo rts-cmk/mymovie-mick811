@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MovieSplatRouteImport } from './routes/movie/$'
+import { Route as MovieMoreSplatRouteImport } from './routes/movie/more/$'
 import { Route as MovieCastSplatRouteImport } from './routes/movie/cast/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const MovieSplatRoute = MovieSplatRouteImport.update({
   path: '/movie/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MovieMoreSplatRoute = MovieMoreSplatRouteImport.update({
+  id: '/movie/more/$',
+  path: '/movie/more/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MovieCastSplatRoute = MovieCastSplatRouteImport.update({
   id: '/movie/cast/$',
   path: '/movie/cast/$',
@@ -33,30 +39,34 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/movie/$': typeof MovieSplatRoute
   '/movie/cast/$': typeof MovieCastSplatRoute
+  '/movie/more/$': typeof MovieMoreSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/movie/$': typeof MovieSplatRoute
   '/movie/cast/$': typeof MovieCastSplatRoute
+  '/movie/more/$': typeof MovieMoreSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/movie/$': typeof MovieSplatRoute
   '/movie/cast/$': typeof MovieCastSplatRoute
+  '/movie/more/$': typeof MovieMoreSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/movie/$' | '/movie/cast/$'
+  fullPaths: '/' | '/movie/$' | '/movie/cast/$' | '/movie/more/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/movie/$' | '/movie/cast/$'
-  id: '__root__' | '/' | '/movie/$' | '/movie/cast/$'
+  to: '/' | '/movie/$' | '/movie/cast/$' | '/movie/more/$'
+  id: '__root__' | '/' | '/movie/$' | '/movie/cast/$' | '/movie/more/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MovieSplatRoute: typeof MovieSplatRoute
   MovieCastSplatRoute: typeof MovieCastSplatRoute
+  MovieMoreSplatRoute: typeof MovieMoreSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MovieSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/movie/more/$': {
+      id: '/movie/more/$'
+      path: '/movie/more/$'
+      fullPath: '/movie/more/$'
+      preLoaderRoute: typeof MovieMoreSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/movie/cast/$': {
       id: '/movie/cast/$'
       path: '/movie/cast/$'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MovieSplatRoute: MovieSplatRoute,
   MovieCastSplatRoute: MovieCastSplatRoute,
+  MovieMoreSplatRoute: MovieMoreSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
